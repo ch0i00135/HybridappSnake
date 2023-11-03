@@ -14,7 +14,7 @@
         <canvas id="ByamCanvas" width="1000" height="800"></canvas>
         <p>Boost: 뱀 길이에 따라 게이지 최대량 변화</p>
         <p>Snake: 뱀의 길이</p>
-        <p>Obstacle: 현재 생성된 장애물의 갯수</p>
+        <p>Obstacle: 현재 생성된 장애물의 갯수 </p>
         <p>Score: 장애물이 밖으로 나갔을경우 +10, 뱀 몸통 획득시 +100</p>
         <script>
             const canvas = document.getElementById('ByamCanvas');
@@ -99,7 +99,7 @@
                     let scalar = Math.sqrt((this.DirX*this.DirX) + (this.DirY*this.DirY));
                     this.DirX=this.DirX/scalar;
                     this.DirY=this.DirY/scalar;  
-                    this.Speed = Math.random() * 6 + 2;
+                    this.Speed = Math.random() * 5 + 2;
                     this.Size = 40 ;
                     this.Shape = (Math.random() < 0.5) ? "rectangle" : "triangle";
                     this.Angle = 0;
@@ -129,10 +129,12 @@
                         let scalar = Math.sqrt((this.DirX*this.DirX) + (this.DirY*this.DirY));
                         this.DirX=this.DirX/scalar;
                         this.DirY=this.DirY/scalar; 
-                        this.Speed = Math.random() * 6 + 2;
+                        this.Speed = Math.random() * 5 + 2;
+                        this.Shape = (Math.random() < 0.5) ? "rectangle" : "triangle";
                     }
                 }
                 Draw(){
+                    console.log(this.DirX);
                     context.save();
                     context.translate(this.PosX, this.PosY);
                     context.rotate(this.Angle);
@@ -228,6 +230,32 @@
                     }
                     for (let j = 0; j < Items.length; j++) {
                         checkCollision(Player[i], Items[j]);
+                    }
+                }
+            }
+            
+            function checkObstacleCollision(obstacle1, obstacle2) {
+                const distanceX = obstacle1.PosX - obstacle2.PosX;
+                const distanceY = obstacle1.PosY - obstacle2.PosY;
+                const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+
+                if (distance < (obstacle1.Size + obstacle2.Size) / 2) {
+                    // 장애물끼리 충돌하면 방향을 변경
+                    const tempDirX = obstacle2.DirX;
+                    const tempDirY = obstacle2.DirY;
+
+                    obstacle2.DirX = obstacle1.DirX;
+                    obstacle2.DirY = obstacle1.DirY;
+                    
+                    obstacle1.DirX = tempDirX;
+                    obstacle1.DirY = tempDirY;
+                }
+            }
+
+            function handleObstacleCollisions() {
+                for (let i = 0; i < Obstacles.length; i++) {
+                    for (let j = i + 1; j < Obstacles.length; j++) {
+                        checkObstacleCollision(Obstacles[i], Obstacles[j]);
                     }
                 }
             }
@@ -337,7 +365,8 @@
                     Items[i].Update();
                     Items[i].Draw();
                 }
-                handleCollisions(); // 충돌 처리 함수 호출
+                handleCollisions(); // 플레이어와 장애물 간의 충돌 처리 함수 호출
+                handleObstacleCollisions(); // 장애물끼리의 충돌 처리 함수 호출
                 drawTopText();
                 if(Player.length==0){
                     GameOver();
